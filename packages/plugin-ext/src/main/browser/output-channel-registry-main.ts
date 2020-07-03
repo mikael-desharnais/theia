@@ -31,10 +31,8 @@ export class OutputChannelRegistryMainImpl implements OutputChannelRegistryMain 
 
     private commonOutputWidget: OutputWidget | undefined;
 
-    private channels: Map<string, OutputChannel> = new Map();
-
     $append(channelName: string, value: string, pluginInfo: PluginInfo): PromiseLike<void> {
-        const outputChannel = this.getChannel(channelName);
+        const outputChannel = this.outputChannelManager.getChannel(channelName);
         if (outputChannel) {
             outputChannel.append(value);
         }
@@ -43,7 +41,7 @@ export class OutputChannelRegistryMainImpl implements OutputChannelRegistryMain 
     }
 
     $clear(channelName: string): PromiseLike<void> {
-        const outputChannel = this.getChannel(channelName);
+        const outputChannel = this.outputChannelManager.getChannel(channelName);
         if (outputChannel) {
             outputChannel.clear();
         }
@@ -53,15 +51,11 @@ export class OutputChannelRegistryMainImpl implements OutputChannelRegistryMain 
 
     $dispose(channelName: string): PromiseLike<void> {
         this.outputChannelManager.deleteChannel(channelName);
-        if (this.channels.has(channelName)) {
-            this.channels.delete(channelName);
-        }
-
         return Promise.resolve();
     }
 
     async $reveal(channelName: string, preserveFocus: boolean): Promise<void> {
-        const outputChannel = this.getChannel(channelName);
+        const outputChannel = this.outputChannelManager.getChannel(channelName);
         if (outputChannel) {
             const activate = !preserveFocus;
             const reveal = preserveFocus;
@@ -71,7 +65,7 @@ export class OutputChannelRegistryMainImpl implements OutputChannelRegistryMain 
     }
 
     $close(channelName: string): PromiseLike<void> {
-        const outputChannel = this.getChannel(channelName);
+        const outputChannel = this.outputChannelManager.getChannel(channelName);
         if (outputChannel) {
             outputChannel.setVisibility(false);
         }
@@ -82,17 +76,5 @@ export class OutputChannelRegistryMainImpl implements OutputChannelRegistryMain 
         }
 
         return Promise.resolve();
-    }
-
-    private getChannel(channelName: string): OutputChannel | undefined {
-        let outputChannel: OutputChannel | undefined;
-        if (this.channels.has(channelName)) {
-            outputChannel = this.channels.get(channelName);
-        } else {
-            outputChannel = this.outputChannelManager.getChannel(channelName);
-            this.channels.set(channelName, outputChannel);
-        }
-
-        return outputChannel;
     }
 }
